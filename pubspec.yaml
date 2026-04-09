@@ -1,4 +1,4 @@
-name: voxlog
+name: open_vox
 description: "Practice journal for musicians — track sessions, streaks, progress"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.

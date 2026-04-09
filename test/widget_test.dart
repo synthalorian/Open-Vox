@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:voxlog/theme/vox_theme.dart';
+import 'package:open_vox/theme/vox_theme.dart';
 
 void main() {
   testWidgets('VoxTheme darkTheme applies correctly', (tester) async {

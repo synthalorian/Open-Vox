@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:voxlog/models/practice_session.dart';
+import 'package:open_vox/models/practice_session.dart';
 
 void main() {
   group('Instrument', () {

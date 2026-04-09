@@ -16,7 +16,7 @@ class VoxLogApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'VoxLog',
+      title: 'Open Vox',
       debugShowCheckedModeBanner: false,
       theme: VoxTheme.darkTheme,
       home: const HomeScreen(),
