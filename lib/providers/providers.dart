@@ -27,6 +27,13 @@ class SessionsNotifier extends StateNotifier<List<PracticeSession>> {
     state = _repo.getAll();
   }
 
+  Future<void> importAll(List<PracticeSession> sessions) async {
+    for (final s in sessions) {
+      await _repo.save(s);
+    }
+    state = _repo.getAll();
+  }
+
   void refresh() {
     state = _repo.getAll();
   }

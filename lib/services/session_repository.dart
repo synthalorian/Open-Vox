@@ -12,7 +12,7 @@ class SessionRepository {
   Box get _box => Hive.box(_boxName);
 
   Future<void> save(PracticeSession session) async {
-    await _box.put(session.id, session.toMap());
+    await _box.put(session.id, session.toJson());
   }
 
   Future<void> delete(String id) async {
@@ -22,7 +22,7 @@ class SessionRepository {
   List<PracticeSession> getAll() {
     return _box.values
         .map((data) =>
-            PracticeSession.fromMap(Map<dynamic, dynamic>.from(data)))
+            PracticeSession.fromJson(Map<String, dynamic>.from(data)))
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
   }

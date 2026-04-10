@@ -5,6 +5,11 @@ import '../providers/providers.dart';
 import '../theme/vox_theme.dart';
 import '../widgets/log_session_dialog.dart';
 import 'stats_screen.dart';
+import 'timer_screen.dart';
+
+import '../services/import_export_service.dart';
+
+import 'package:flutter_animate/flutter_animate.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -15,9 +20,18 @@ class HomeScreen extends ConsumerWidget {
     final stats = ref.watch(statsProvider);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('VoxLog'),
+        title: const Text('VOXLOG'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.timer_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const TimerScreen()),
+            ),
+            tooltip: 'Practice Timer',
+          ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
             onPressed: () => Navigator.push(
@@ -26,114 +40,187 @@ class HomeScreen extends ConsumerWidget {
             ),
             tooltip: 'Statistics',
           ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Stats cards
-          Row(
-            children: [
-              _StatCard(
-                icon: Icons.local_fire_department,
-                label: 'Streak',
-                value: '${stats.currentStreak}',
-                suffix: 'days',
-                color: VoxTheme.streak,
-              ),
-              const SizedBox(width: 12),
-              _StatCard(
-                icon: Icons.timer,
-                label: 'This Week',
-                value: '${stats.thisWeek.fold<int>(0, (s, e) => s + e.duration.inMinutes)}',
-                suffix: 'min',
-                color: VoxTheme.accent,
-              ),
-              const SizedBox(width: 12),
-              _StatCard(
-                icon: Icons.music_note,
-                label: 'Total',
-                value: '${stats.totalSessions}',
-                suffix: 'sessions',
-                color: VoxTheme.success,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Week heatmap
-          _WeekHeatmap(sessions: sessions),
-          const SizedBox(height: 20),
-          // Recent sessions
-          Row(
-            children: [
-              const Text(
-                'RECENT SESSIONS',
-                style: TextStyle(
-                  color: VoxTheme.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '${sessions.length} total',
-                style: const TextStyle(
-                  color: VoxTheme.textSecondary,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (sessions.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(32),
-              child: Center(
-                child: Column(
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'export') {
+                await ImportExportService.exportSessions(sessions);
+              } else if (value == 'import') {
+                final imported = await ImportExportService.importSessions();
+                if (imported != null) {
+                  await ref.read(sessionsProvider.notifier).importAll(imported);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('IMPORTED ${imported.length} SESSIONS'),
+                        backgroundColor: VoxTheme.success,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'export',
+                child: Row(
                   children: [
-                    Icon(Icons.music_note, color: VoxTheme.textSecondary, size: 48),
-                    SizedBox(height: 12),
-                    Text(
-                      'No practice sessions yet',
-                      style: TextStyle(color: VoxTheme.textPrimary, fontSize: 16),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Tap the button below to log your first session',
-                      style: TextStyle(color: VoxTheme.textSecondary, fontSize: 13),
-                    ),
+                    Icon(Icons.upload, size: 20),
+                    SizedBox(width: 8),
+                    Text('EXPORT DATA'),
                   ],
                 ),
               ),
-            )
-          else
-            ...sessions.map((session) => Dismissible(
+              const PopupMenuItem(
+                value: 'import',
+                child: Row(
+                  children: [
+                    Icon(Icons.download, size: 20),
+                    SizedBox(width: 8),
+                    Text('IMPORT DATA'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              VoxTheme.background,
+              VoxTheme.background.withValues(alpha: 0.8),
+              VoxTheme.background,
+            ],
+          ),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+          children: [
+            // Stats cards
+            Row(
+              children: [
+                _StatCard(
+                  icon: Icons.local_fire_department,
+                  label: 'Streak',
+                  value: '${stats.currentStreak}',
+                  suffix: 'days',
+                  color: VoxTheme.streak,
+                ),
+                const SizedBox(width: 12),
+                _StatCard(
+                  icon: Icons.timer,
+                  label: 'This Week',
+                  value: '${stats.thisWeek.fold<int>(0, (s, e) => s + e.duration.inMinutes)}',
+                  suffix: 'min',
+                  color: VoxTheme.accent,
+                ),
+                const SizedBox(width: 12),
+                _StatCard(
+                  icon: Icons.music_note,
+                  label: 'Total',
+                  value: '${stats.totalSessions}',
+                  suffix: 'sessions',
+                  color: VoxTheme.success,
+                ),
+              ],
+            ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.2),
+            const SizedBox(height: 24),
+            // Week heatmap
+            _WeekHeatmap(sessions: sessions)
+                .animate()
+                .fadeIn(delay: 100.ms, duration: 400.ms)
+                .slideY(begin: 0.1),
+            const SizedBox(height: 24),
+            // Recent sessions
+            Row(
+              children: [
+                const Text(
+                  'RECENT SESSIONS',
+                  style: TextStyle(
+                    color: VoxTheme.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${sessions.length} total',
+                  style: const TextStyle(
+                    color: VoxTheme.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ).animate().fadeIn(delay: 200.ms),
+            const SizedBox(height: 12),
+            if (sessions.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(48),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.music_note,
+                          color: VoxTheme.divider, size: 64),
+                      SizedBox(height: 16),
+                      Text(
+                        'GRID EMPTY',
+                        style: TextStyle(
+                            color: VoxTheme.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ).animate().fadeIn(delay: 300.ms)
+            else
+              ...sessions.asMap().entries.map((entry) {
+                final index = entry.key;
+                final session = entry.value;
+                return Dismissible(
                   key: Key(session.id),
                   direction: DismissDirection.endToStart,
                   background: Container(
                     alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 16),
+                    padding: const EdgeInsets.only(right: 24),
+                    margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.red.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.delete, color: Colors.red),
+                    child: const Icon(Icons.delete_forever, color: Colors.red),
                   ),
                   onDismissed: (_) {
                     ref.read(sessionsProvider.notifier).remove(session.id);
                   },
-                  child: _SessionCard(session: session),
-                )),
-        ],
+                  child: InkWell(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (_) => LogSessionDialog(session: session),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    child: _SessionCard(session: session),
+                  ),
+                ).animate().fadeIn(delay: (300 + (index * 50)).ms).slideX(begin: 0.1);
+              }),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showDialog(
           context: context,
           builder: (_) => const LogSessionDialog(),
         ),
-        icon: const Icon(Icons.add),
-        label: const Text('Log Practice'),
+        icon: const Icon(Icons.add_box_rounded),
+        label: const Text(
+          'LOG PRACTICE',
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
+        ),
       ),
     );
   }

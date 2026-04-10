@@ -1,34 +1,29 @@
-# VoxLog
+# VoxLog 🎸🎹🥁
 
-Practice journal for musicians — track sessions, streaks, progress.
+A retro-futuristic practice journal for musicians. Track your sessions, streaks, and progress with a synthwave aesthetic.
 
-## What is VoxLog?
+## Features 🚀
 
-Track practice sessions across any instrument. Log duration, BPM goals, notes, and rate your sessions. Streak tracking, weekly heatmaps, and progress visualization. Simple and fast to log.
+- **Retro Aesthetic**: Deep space purple interface with neon accents.
+- **Session Tracking**: Log practice duration, instrument, category, BPM, and notes.
+- **Practice Timer**: Integrated stopwatch for real-time practice tracking.
+- **Statistics**: View your streak, total time, and breakdowns by instrument/category.
+- **Data Portability**: Export your data to JSON and import it back anytime.
+- **Fast & Private**: Powered by Hive for lightning-fast local storage. No cloud tracking.
 
-## Features (Planned)
+## Tech Stack 🛠️
 
-- **Quick logging** — instrument, category, duration, notes in seconds
-- **Streak tracking** — maintain daily practice streaks
-- **Weekly heatmap** — see your practice consistency at a glance
-- **BPM tracking** — set and track tempo goals over time
-- **Star ratings** — rate session quality for self-reflection
-- **Statistics** — time by instrument, category breakdowns, trends
-- **Tags** — organize sessions by topic or technique
-- **Offline-first** — no account required
+- **Flutter**: Cross-platform UI toolkit.
+- **Riverpod**: State management.
+- **Hive**: Local database.
+- **Freezed**: Code generation for immutable models.
+- **Flutter Animate**: Smooth, high-performance animations.
 
-## Tech Stack
+## Getting Started 🏁
 
-- **Flutter** (cross-platform: iOS, Android, desktop, web)
-- **Local storage** for offline-first data
+1.  Clone the repo.
+2.  Run `flutter pub get`.
+3.  Run `flutter pub run build_runner build --delete-conflicting-outputs`.
+4.  Launch on your device!
 
-## Getting Started
-
-```bash
-flutter pub get
-flutter run
-```
-
-## License
-
-MIT
+## This is the wave. 🌊

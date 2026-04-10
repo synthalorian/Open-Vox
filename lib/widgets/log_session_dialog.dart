@@ -6,20 +6,33 @@ import '../providers/providers.dart';
 import '../theme/vox_theme.dart';
 
 class LogSessionDialog extends ConsumerStatefulWidget {
-  const LogSessionDialog({super.key});
+  final PracticeSession? session;
+  const LogSessionDialog({super.key, this.session});
 
   @override
   ConsumerState<LogSessionDialog> createState() => _LogSessionDialogState();
 }
 
 class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
-  Instrument _instrument = Instrument.electricGuitar;
-  PracticeCategory _category = PracticeCategory.technique;
-  int _minutes = 30;
-  int _rating = 3;
+  late Instrument _instrument;
+  late PracticeCategory _category;
+  late int _minutes;
+  late int _rating;
   int? _bpmGoal;
   int? _bpmAchieved;
   final _notesController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _instrument = widget.session?.instrument ?? Instrument.electricGuitar;
+    _category = widget.session?.category ?? PracticeCategory.technique;
+    _minutes = widget.session?.duration.inMinutes ?? 30;
+    _rating = widget.session?.rating ?? 3;
+    _bpmGoal = widget.session?.bpmGoal;
+    _bpmAchieved = widget.session?.bpmAchieved;
+    _notesController.text = widget.session?.notes ?? '';
+  }
 
   @override
   void dispose() {
@@ -41,9 +54,9 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Log Practice',
-                  style: TextStyle(
+                Text(
+                  widget.session != null ? 'Edit Practice' : 'Log Practice',
+                  style: const TextStyle(
                     color: VoxTheme.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -61,7 +74,7 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
                       label: Text('${inst.emoji} ${inst.label}'),
                       selected: selected,
                       onSelected: (_) => setState(() => _instrument = inst),
-                      selectedColor: VoxTheme.accent.withOpacity(0.3),
+                      selectedColor: VoxTheme.accent.withValues(alpha: 0.3),
                       labelStyle: TextStyle(
                         color: selected ? VoxTheme.accent : VoxTheme.textSecondary,
                         fontSize: 12,
@@ -81,7 +94,7 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
                       label: Text(cat.label),
                       selected: selected,
                       onSelected: (_) => setState(() => _category = cat),
-                      selectedColor: VoxTheme.accent.withOpacity(0.3),
+                      selectedColor: VoxTheme.accent.withValues(alpha: 0.3),
                       labelStyle: TextStyle(
                         color: selected ? VoxTheme.accent : VoxTheme.textSecondary,
                         fontSize: 12,
@@ -124,7 +137,7 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: _minutes == m
-                                  ? VoxTheme.accent.withOpacity(0.2)
+                                  ? VoxTheme.accent.withValues(alpha: 0.2)
                                   : VoxTheme.surfaceLight,
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -250,8 +263,8 @@ class _LogSessionDialogState extends ConsumerState<LogSessionDialog> {
 
   Future<void> _save() async {
     final session = PracticeSession(
-      id: const Uuid().v4(),
-      date: DateTime.now(),
+      id: widget.session?.id ?? const Uuid().v4(),
+      date: widget.session?.date ?? DateTime.now(),
       instrument: _instrument,
       category: _category,
       duration: Duration(minutes: _minutes),

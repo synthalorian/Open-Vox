@@ -1,10 +1,22 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'practice_session.freezed.dart';
+part 'practice_session.g.dart';
+
 enum Instrument {
+  @JsonValue('electric_guitar')
   electricGuitar('Electric Guitar', '🎸'),
+  @JsonValue('acoustic_guitar')
   acousticGuitar('Acoustic Guitar', '🪕'),
+  @JsonValue('bass')
   bass('Bass', '🎸'),
+  @JsonValue('piano')
   piano('Piano/Keys', '🎹'),
+  @JsonValue('drums')
   drums('Drums', '🥁'),
+  @JsonValue('vocals')
   vocals('Vocals', '🎤'),
+  @JsonValue('other')
   other('Other', '🎵');
 
   final String label;
@@ -13,73 +25,48 @@ enum Instrument {
 }
 
 enum PracticeCategory {
+  @JsonValue('technique')
   technique('Technique'),
+  @JsonValue('songs')
   songs('Songs/Repertoire'),
+  @JsonValue('theory')
   theory('Theory'),
+  @JsonValue('improvisation')
   improvisation('Improvisation'),
+  @JsonValue('ear_training')
   earTraining('Ear Training'),
+  @JsonValue('sight_reading')
   sightReading('Sight Reading'),
+  @JsonValue('recording')
   recording('Recording'),
+  @JsonValue('jamming')
   jamming('Jamming'),
+  @JsonValue('warmup')
   warmup('Warm-up'),
+  @JsonValue('other')
   other('Other');
 
   final String label;
   const PracticeCategory(this.label);
 }
 
-class PracticeSession {
-  final String id;
-  final DateTime date;
-  final Instrument instrument;
-  final PracticeCategory category;
-  final Duration duration;
-  final String? notes;
-  final int? bpmGoal;
-  final int? bpmAchieved;
-  final int rating; // 1-5 stars
-  final List<String> tags;
+@freezed
+class PracticeSession with _$PracticeSession {
+  const factory PracticeSession({
+    required String id,
+    required DateTime date,
+    required Instrument instrument,
+    required PracticeCategory category,
+    required Duration duration,
+    String? notes,
+    int? bpmGoal,
+    int? bpmAchieved,
+    @Default(3) int rating,
+    @Default([]) List<String> tags,
+  }) = _PracticeSession;
 
-  PracticeSession({
-    required this.id,
-    required this.date,
-    required this.instrument,
-    required this.category,
-    required this.duration,
-    this.notes,
-    this.bpmGoal,
-    this.bpmAchieved,
-    this.rating = 3,
-    List<String>? tags,
-  }) : tags = tags ?? [];
-
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'date': date.toIso8601String(),
-        'instrument': instrument.index,
-        'category': category.index,
-        'durationMinutes': duration.inMinutes,
-        'notes': notes,
-        'bpmGoal': bpmGoal,
-        'bpmAchieved': bpmAchieved,
-        'rating': rating,
-        'tags': tags,
-      };
-
-  factory PracticeSession.fromMap(Map<dynamic, dynamic> map) {
-    return PracticeSession(
-      id: map['id'] as String,
-      date: DateTime.parse(map['date'] as String),
-      instrument: Instrument.values[map['instrument'] as int],
-      category: PracticeCategory.values[map['category'] as int],
-      duration: Duration(minutes: map['durationMinutes'] as int),
-      notes: map['notes'] as String?,
-      bpmGoal: map['bpmGoal'] as int?,
-      bpmAchieved: map['bpmAchieved'] as int?,
-      rating: map['rating'] as int? ?? 3,
-      tags: List<String>.from(map['tags'] ?? []),
-    );
-  }
+  factory PracticeSession.fromJson(Map<String, dynamic> json) =>
+      _$PracticeSessionFromJson(json);
 }
 
 class PracticeStats {
@@ -96,6 +83,7 @@ class PracticeStats {
 
   int get currentStreak {
     if (sessions.isEmpty) return 0;
+    
     final sorted = List<PracticeSession>.from(sessions)
       ..sort((a, b) => b.date.compareTo(a.date));
 
@@ -111,10 +99,13 @@ class PracticeStats {
 
     for (final date in dates) {
       final diff = check.difference(date).inDays;
-      if (diff <= 1) {
+      if (diff == 0) {
+        streak++;
+        // Keep check as is for next iteration if it was today
+      } else if (diff == 1) {
         streak++;
         check = date;
-      } else {
+      } else if (diff > 1) {
         break;
       }
     }
@@ -144,8 +135,9 @@ class PracticeStats {
 
   List<PracticeSession> get thisWeek {
     final now = DateTime.now();
+    // Monday is 1, Sunday is 7 in DateTime.weekday
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
     final start = DateTime(weekStart.year, weekStart.month, weekStart.day);
-    return sessions.where((s) => s.date.isAfter(start)).toList();
+    return sessions.where((s) => s.date.isAfter(start) || s.date.isAtSameMomentAs(start)).toList();
   }
 }

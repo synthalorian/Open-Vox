@@ -34,7 +34,7 @@ void main() {
       expect(session.bpmGoal, isNull);
     });
 
-    test('round-trips through Map', () {
+    test('round-trips through JSON', () {
       final session = PracticeSession(
         id: 'test-2',
         date: DateTime(2026, 4, 8, 14, 30),
@@ -47,7 +47,7 @@ void main() {
         rating: 4,
         tags: ['worship'],
       );
-      final restored = PracticeSession.fromMap(session.toMap());
+      final restored = PracticeSession.fromJson(session.toJson());
       expect(restored.id, session.id);
       expect(restored.instrument, session.instrument);
       expect(restored.category, session.category);
